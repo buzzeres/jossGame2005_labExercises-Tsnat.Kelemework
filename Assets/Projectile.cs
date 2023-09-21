@@ -1,3 +1,5 @@
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,9 +9,8 @@ public class Projectile : MonoBehaviour
     public float launchVelocity;
     public float launchAngle;
     public float launchHeight;
-
-    private float velX = 10.0f;  // Doesn't change between frames
-    private float velY = 10.0f;  // Under constant acceleration (gravity)
+    private float velX;
+    private float velY;
 
     void Start()
     {
@@ -18,18 +19,26 @@ public class Projectile : MonoBehaviour
 
     void LaunchBall()
     {
-        // 1. Update velX and velY based on horizontal and vertical components of launch velocity & launch angle
-        // 2. Assign position to new launch height and re-launch the ball!
+        Debug.Log("Launch!");
+        // Calculate the initial velocities based on launch parameters
+        float launchAngleRad = Mathf.Deg2Rad * launchAngle;
+        velX = launchVelocity * Mathf.Cos(launchAngleRad);
+        velY = launchVelocity * Mathf.Sin(launchAngleRad);
+        // Set the initial position
+        transform.position = new Vector3(0, launchHeight, transform.position.z);
     }
 
-    void FixedUpdate()
+    void Update()
     {
-        // Restart the launch
+        // Restart the launch if the Space key is pressed
         if (Input.GetKey(KeyCode.Space))
         {
             LaunchBall();
         }
+    }
 
+    void FixedUpdate()
+    {
         float dt = Time.fixedDeltaTime;
         float acc = Physics.gravity.y;
 
@@ -44,3 +53,4 @@ public class Projectile : MonoBehaviour
         );
     }
 }
+
