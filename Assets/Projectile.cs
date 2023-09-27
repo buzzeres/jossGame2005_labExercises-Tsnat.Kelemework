@@ -20,11 +20,11 @@ public class Projectile : MonoBehaviour
     void LaunchBall()
     {
         Debug.Log("Launch!");
-        // Calculate the initial velocities based on launch parameters
+
         float launchAngleRad = Mathf.Deg2Rad * launchAngle;
         velX = launchVelocity * Mathf.Cos(launchAngleRad);
         velY = launchVelocity * Mathf.Sin(launchAngleRad);
-        // Set the initial position
+       
         transform.position = new Vector3(0, launchHeight, transform.position.z);
     }
 

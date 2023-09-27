@@ -155,8 +155,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f79345389bec5e4aaea6296417ae497, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  launchVelocity: 0
-  launchAngle: 0
+  launchVelocity: 5.56
+  launchAngle: 11.87
   launchHeight: 0
 --- !u!65 &900285061
 BoxCollider:
