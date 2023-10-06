@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,27 +15,33 @@ public class Tsnats_World : MonoBehaviour
     {
         bodies = new List<Tsnats_World>();
         dt = Time.fixedDeltaTime;
-
+ 
     }
 
     public void AddNewodiesFromScene()
     {
-        Tsnats_Body[] foundBodies = FindObjectOfType<Tsnats_Body>();
+        //Find any bodies in the scene not already tracked, if they are not tracked, add them.
 
-        foreach (Tsnats_Body foundBody in foundBodies)
+        Tsnats_Body[] allObjects = FindObjectOfType<Tsnats_Body>(false);
+
+        foreach (Tsnats_Body foundBody in allBodies)
         {
-            
+            if (!bodies.Contains(foundBody))
+            {
+                bodies.Add(foundBody);
+            }
         }
     }
 
 
     private void FixedUpdate()
     {
-        AddNewodiesFromScene();
         foreach (Tsnats_Body body in bodies)
         {
             body.velocity += gravity * body.gravityScale * dt;
-            body.transform.position += body.velocity + dt;
+
+            body.transform.position += body.velocity * dt;
+
         }
 
         t += dt;

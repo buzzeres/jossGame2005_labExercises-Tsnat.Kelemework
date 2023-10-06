@@ -4,19 +4,19 @@ using UnityEngine;
 
 public class Launcher : MonoBehaviour
 {
-    public float launchSpeed = 10;
+    public float launchSpeed = 10.0f;
+    public float launchAngleElevationDegres = 30.0f;
     public GameObject projectileToCopy;
     public float launchElevation = 30;
-
     public Tsnats_World world;
-    // Start is called before the first frame update
-    void Start()
-    {
-
-        
-    }
-
     // Update is called once per frame
+    //void Shoot()
+    //{
+    //    // ever thing in the update can go here as well
+    //}
+    
+    
+    
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
@@ -32,8 +32,7 @@ public class Launcher : MonoBehaviour
             }
 
             tsnats.velocity = new Vector3(launchElevation * Mathf.Deg2Rad* launchSpeed,
-                                            launchElevation* Mathf.Deg2Rad*launchSpeed,
-                0);
+                                            launchElevation* Mathf.Deg2Rad*launchSpeed,0);
         }
 }
 }
