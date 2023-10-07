@@ -96,5 +96,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b1e74b687b96a6429c2870a092f84f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocity: {x: 0, y: 4, z: 0}
-  gravityScale: 1
+  velocity: {x: 0, y: 50, z: 0}
+  gravityScale: 100
+  AirFriction: 10.18

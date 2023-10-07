@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 5866852523366752419}
   - component: {fileID: 1702161975083479355}
   - component: {fileID: 5413009431305591453}
-  - component: {fileID: 1398344748796976797}
   - component: {fileID: -2876867969199030985}
   m_Layer: 0
   m_Name: TSnatsBox
@@ -85,27 +84,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &1398344748796976797
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8402566586223371424}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &-2876867969199030985
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -118,6 +96,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2adef433c79f9f439317c2e0d424170, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  launchSpeed: 123.1
-  LaunchAngleEvevationdegres: -197.3
+  launchSpeed: 100
+  launchAngleElevationDegrees: 100
   ProjectileClone: {fileID: 2386936722548440929, guid: 37c375d94b10ad74aa24bc1df70d7c80, type: 3}
