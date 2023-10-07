@@ -5,34 +5,34 @@ using UnityEngine;
 public class Launcher : MonoBehaviour
 {
     public float launchSpeed = 10.0f;
-    public float launchAngleElevationDegres = 30.0f;
-    public GameObject projectileToCopy;
-    public float launchElevation = 30;
-    public Tsnats_World world;
-    // Update is called once per frame
-    //void Shoot()
-    //{
-    //    // ever thing in the update can go here as well
-    //}
-    
-    
-    
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            GameObject newProjectile = Instantiate(projectileToCopy);
-            newProjectile.transform.position = transform.position;
+    public float LaunchAngleEvevationdegres = 30.0f;
 
-            Tsnats_Body tsnats = newProjectile.GetComponent<Tsnats_Body>();
+    public GameObject ProjectileClone;
+  //  public Tsnats_World world;
 
-            if (tsnats == null)
-            {
-                Debug.Log("no Tsnats ");
-            }
+  void Shoot()
+  {
+      GameObject newObject = Instantiate(ProjectileClone);
+      //  world.bodies.Add(newObject.GetComponent<Tsnats_Body>());
+      //this sets the position for the Launcher
+      newObject.transform.position = transform.position;
+      Tsnats_Body tswana = newObject.GetComponent<Tsnats_Body>();
 
-            tsnats.velocity = new Vector3(launchElevation * Mathf.Deg2Rad* launchSpeed,
-                                            launchElevation* Mathf.Deg2Rad*launchSpeed,0);
-        }
-}
+
+      tswana.velocity = new Vector3(
+          Mathf.Cos(LaunchAngleEvevationdegres * Mathf.Deg2Rad * launchSpeed),
+          Mathf.Sin(LaunchAngleEvevationdegres * Mathf.Deg2Rad * launchSpeed),
+          0);
+    }
+
+
+  void Update()
+  {
+
+      if (Input.GetKeyDown(KeyCode.Space))
+      {
+          Shoot();
+      }
+
+  }
 }
