@@ -41,7 +41,7 @@ public class Tsnats_World : MonoBehaviour
         {
             body.velocity += gravity * body.gravityScale * dt;
 
-            //body.velocity *= 1.0f - (damping * dt);
+            body.velocity *= 1.0f - (damping * dt);
             Vector3 drag = -body.velocity * body.velocity.magnitude * body.velocity.magnitude * body.AirFriction;
 
             body.transform.position += body.velocity * dt;
