@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1743599821883250716}
   - component: {fileID: 558662632085583486}
   - component: {fileID: 3038188731752548904}
-  - component: {fileID: -3402561362900419679}
+  - component: {fileID: 8229882177546398436}
   m_Layer: 0
   m_Name: TSnatsbal
   m_TagString: Untagged
@@ -100,7 +100,8 @@ MonoBehaviour:
   velocity: {x: 0, y: 50, z: 0}
   gravityScale: 100
   AirFriction: 10.18
---- !u!114 &-3402561362900419679
+  ThysicsBody: {fileID: 8229882177546398436}
+--- !u!114 &8229882177546398436
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -109,6 +110,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 2386936722548440929}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a404da3c8b3cfc64ab317d1102d21ad4, type: 3}
+  m_Script: {fileID: 11500000, guid: c57cff78dcdd1c74c91bba41ada1bd81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  shape: 0
+  dimensions: {x: 0, y: 0, z: 0}

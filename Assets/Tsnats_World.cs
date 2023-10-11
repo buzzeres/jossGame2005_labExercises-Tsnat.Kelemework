@@ -17,7 +17,9 @@ public class Tsnats_World : MonoBehaviour
     {
         bodies = new List<Tsnats_Body>();
         dt = Time.fixedDeltaTime;
-       
+
+        // Find the CollisionManager in the scene (assuming it exists)
+        TollisionManager = FindObjectOfType<TollisionManager>();
 
     }
 
