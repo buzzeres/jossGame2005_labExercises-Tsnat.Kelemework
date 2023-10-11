@@ -10,16 +10,21 @@ public class Tsnats_World : MonoBehaviour
     private List<Tsnats_Body> bodies;
     public Vector3 gravity = new Vector3(0, -9.8f, 0);
     public float damping = 0.10f;
+    private TollisionManager TollisionManager;  // Reference to the CollisionManager
+
 
     void Start()
     {
         bodies = new List<Tsnats_Body>();
         dt = Time.fixedDeltaTime;
+       
 
     }
 
     public void CheckForNEWBodies()
     {
+        // Find the CollisionManager in the scene (assuming it exists)
+        TollisionManager = FindObjectOfType<TollisionManager>();
 
         Tsnats_Body[] allBodies = FindObjectsOfType<Tsnats_Body>(false);
         //Find any bodies in the scene not already tracked, if they are not tracked, add them.
@@ -29,6 +34,9 @@ public class Tsnats_World : MonoBehaviour
             if (!bodies.Contains(foundBody))
             {
                 bodies.Add(foundBody);
+                // Register the body with the CollisionManager
+                TollisionManager.RegisterBody(foundBody);
+
             }
         }
     }
