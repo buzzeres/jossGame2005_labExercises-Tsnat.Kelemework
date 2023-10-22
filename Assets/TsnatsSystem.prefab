@@ -47,3 +47,4 @@ MonoBehaviour:
   dt: 0.02
   t: 0
   gravity: {x: 0, y: -9.8, z: 0}
+  damping: 0.1

@@ -10,23 +10,16 @@ public class Tsnats_World : MonoBehaviour
     private List<Tsnats_Body> bodies;
     public Vector3 gravity = new Vector3(0, -9.8f, 0);
     public float damping = 0.10f;
-    private TollisionManager TollisionManager;  // Reference to the CollisionManager
-
 
     void Start()
     {
         bodies = new List<Tsnats_Body>();
         dt = Time.fixedDeltaTime;
 
-        // Find the CollisionManager in the scene (assuming it exists)
-        TollisionManager = FindObjectOfType<TollisionManager>();
-
     }
 
     public void CheckForNEWBodies()
     {
-        // Find the CollisionManager in the scene (assuming it exists)
-        TollisionManager = FindObjectOfType<TollisionManager>();
 
         Tsnats_Body[] allBodies = FindObjectsOfType<Tsnats_Body>(false);
         //Find any bodies in the scene not already tracked, if they are not tracked, add them.
@@ -36,17 +29,13 @@ public class Tsnats_World : MonoBehaviour
             if (!bodies.Contains(foundBody))
             {
                 bodies.Add(foundBody);
-                // Register the body with the CollisionManager
-                TollisionManager.RegisterBody(foundBody);
-
             }
         }
     }
 
 
-    private void FixedUpdate()
+    private void AddlyKinematics()
     {
-        CheckForNEWBodies();
         foreach (Tsnats_Body body in bodies)
         {
             body.velocity += gravity * body.gravityScale * dt;
@@ -57,8 +46,45 @@ public class Tsnats_World : MonoBehaviour
             body.transform.position += body.velocity * dt;
 
         }
+    }
 
-        t += dt;
+    private void CheckCollisions()
+    {
+        //For each object 
+        for(int i = 0; i < bodies.Count; i++)
+        {
+            Tsnats_Body bodyA = bodies[i];
+
+            //checking the collision between eachother
+            for (int j = 1+1; j < bodies.Count; j++)
+            {
+                Tsnats_Body bodyB = bodies[j];
+
+
+                Vector3 displacment = bodyA.transform.position - bodyB.transform.position;
+                float distance = displacment.magnitude;
+
+                if (distance < bodyA.radius + bodyB.radius)
+                {
+                    print(bodyA.gameObject.name + "colliding with " + bodyB.gameObject.name);
+                }
+                else 
+                {
+
+                }
+
+
+            }
+
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        CheckForNEWBodies();
+        CheckCollisions();
+        AddlyKinematics();
+         t += dt;
     }
 
 }
