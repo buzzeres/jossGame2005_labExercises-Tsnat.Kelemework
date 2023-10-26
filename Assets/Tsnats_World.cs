@@ -1,7 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Rendering.VirtualTexturing;
 
 public class Tsnats_World : MonoBehaviour
 {
@@ -50,13 +49,13 @@ public class Tsnats_World : MonoBehaviour
     }
 
 
-    public bool CheckCollisionBetweenSqheres(Tsnats_Body ShapeA, Tsnats_Body ShapeB)
+    public bool CheckCollisionBetweenSpheres(TsnatsShapeSphere shapeA, TsnatsShapeSphere shapeB)
     {
         //look for the objects A and B
-        Vector3 displacment = bodyA.transform.position - bodyB.transform.position;
+        Vector3 displacment = shapeA.transform.position - shapeB.transform.position;
         float distance = displacment.magnitude;
 
-        if (distance < bodyA.radius + bodyB.radius) // over lapping
+        if (distance < shapeA.radius + shapeB.radius) // over lapping
         {
             return true;
         }
@@ -68,13 +67,16 @@ public class Tsnats_World : MonoBehaviour
 
     private bool CheckCollisionBetween(Tsnats_Body bodyA, Tsnats_Body bodyB)
     {
-        if(bodyA.shape == null || bodyB.shape == null) return false;
-        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sqhere &&
-                bodyB.shape.GetShapeType() == TsnatsShape.Type.Sqhere)
+        if (bodyA.shape == null || bodyB.shape == null) return false;
+        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere && 
+                 bodyB.shape.GetShapeType() == TsnatsShape.Type.Sphere)
         {
-            CheckCollisionBetweenSqheres((TsnatsShapeSpher)bodyA.shape, bodyB.shape);
+            return CheckCollisionBetweenSpheres((TsnatsShapeSphere)bodyA.shape, (TsnatsShapeSphere)bodyB.shape);
         }
-        
+        else
+        {
+            throw new System.Exception("Unknown");
+        }
     }
 
     public void CheckCollisions()
@@ -83,29 +85,25 @@ public class Tsnats_World : MonoBehaviour
         {
             for (int i = 0; i < bodies.Count; i++)
             {
-
                 bodies[i].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
             }
         }
+
         for (int i = 0; i < bodies.Count; i++)
         {
             Tsnats_Body bodyA = bodies[i];
-            
+
             for (int j = i + 1; j < bodies.Count; j++)
             {
                 Tsnats_Body bodyB = bodies[j];
 
                 bool isColliding = CheckCollisionBetween(bodyA, bodyB);
 
-                //if (isColliding)
-                //{
-                //    ResolveCollision(bodyA, bodyB);
-                //}
-
                 if (isDebuging)
                 {
                     if (isColliding)
                     {
+                        Debug.Log("Collision detected between " + bodyA.name + " and " + bodyB.name);
                         bodyA.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
                         bodyB.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
                     }
@@ -114,21 +112,13 @@ public class Tsnats_World : MonoBehaviour
         }
     }
 
-    //private void ResolveCollision(Tsnats_Body bodyA, Tsnats_Body bodyB)
-    //{
-    //    Vector3 collisionNormal = (bodyB.transform.position - bodyA.transform.position).normalized;
-    //    bodyA.velocity = Vector3.Reflect(bodyA.velocity, collisionNormal);
-    //    bodyB.velocity = Vector3.Reflect(bodyB.velocity, collisionNormal);
-    //}
-
-
     private void FixedUpdate()
     {
-        AddlyKinematics();
         CheckCollisions();
+        AddlyKinematics();
         CheckForNEWBodies();
-        
-         t += dt;
+
+        t += dt;
     }
 
 }

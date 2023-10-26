@@ -4,14 +4,10 @@ using UnityEngine;
 
 public abstract class TsnatsShape : MonoBehaviour
 {
-
-
     public enum Type
     {
-        Sqhere = 0
+        Sphere = 0  // Corrected spelling
     }
 
     public abstract Type GetShapeType();
-        
-
 }
