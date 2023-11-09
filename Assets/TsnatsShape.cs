@@ -6,8 +6,11 @@ public abstract class TsnatsShape : MonoBehaviour
 {
     public enum Type
     {
-        Sphere = 0  // Corrected spelling
+        Sphere = 0,
+        Plane,
+        HalfSpace
     }
 
     public abstract Type GetShapeType();
 }
+

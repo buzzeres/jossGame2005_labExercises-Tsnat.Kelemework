@@ -68,23 +68,71 @@ public class Tsnats_World : MonoBehaviour
     private bool CheckCollisionBetween(Tsnats_Body bodyA, Tsnats_Body bodyB)
     {
         if (bodyA.shape == null || bodyB.shape == null) return false;
-        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere && 
-                 bodyB.shape.GetShapeType() == TsnatsShape.Type.Sphere)
+
+        // Check for sphere-sphere collision
+        if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere &&
+            bodyB.shape.GetShapeType() == TsnatsShape.Type.Sphere)
         {
             return CheckCollisionBetweenSpheres((TsnatsShapeSphere)bodyA.shape, (TsnatsShapeSphere)bodyB.shape);
         }
+        // Check for sphere-plane collision
+        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere &&
+                 bodyB.shape.GetShapeType() == TsnatsShape.Type.Plane)
+        {
+            return CheckCollisionSpherePlane((TsnatsShapeSphere)bodyA.shape, (TsnatsShapePlane)bodyB.shape);
+        }
+        // Check for sphere-halfspace collision
+        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere &&
+                 bodyB.shape.GetShapeType() == TsnatsShape.Type.HalfSpace)
+        {
+            return CheckCollisionSphereHalfSpace((TsnatsShapeSphere)bodyA.shape, (TsnatsShapeHalfSpace)bodyB.shape);
+        }
+        // Check for plane-sphere collision (which is the same as sphere-plane)
+        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Plane &&
+                 bodyB.shape.GetShapeType() == TsnatsShape.Type.Sphere)
+        {
+            return CheckCollisionSpherePlane((TsnatsShapeSphere)bodyB.shape, (TsnatsShapePlane)bodyA.shape);
+        }
+        // Check for halfspace-sphere collision (which is the same as sphere-halfspace)
+        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.HalfSpace &&
+                 bodyB.shape.GetShapeType() == TsnatsShape.Type.Sphere)
+        {
+            return CheckCollisionSphereHalfSpace((TsnatsShapeSphere)bodyB.shape, (TsnatsShapeHalfSpace)bodyA.shape);
+        }
         else
         {
-            throw new System.Exception("Unknown");
+            throw new System.Exception("Unknown collision types: " + bodyA.shape.GetShapeType() + " and " + bodyB.shape.GetShapeType());
         }
     }
 
-    public void CheckCollisions()
+
+
+
+    private bool CheckCollisionSpherePlane(TsnatsShapeSphere sphere, TsnatsShapePlane plane)
     {
-        // First, set all bodies to not colliding.
-        foreach (var body in bodies)
+        float distanceToPlane = Vector3.Dot(plane.normal, sphere.transform.position) - plane.distanceFromOrigin;
+        return Mathf.Abs(distanceToPlane) <= sphere.radius;
+    }
+
+    private bool CheckCollisionSphereHalfSpace(TsnatsShapeSphere sphere, TsnatsShapeHalfSpace halfSpace)
+    {
+       Vector3 normal = halfSpace.transform.rotation * new Vector3();
+        Vector3 displacement = sphere.transform.position - halfSpace.transform.position;
+        float projection = Vector3.Dot(displacement, normal);
+        bool isColliding = projection < sphere.radius;
+        return isColliding;
+    }
+
+
+
+    private void CheckCollisions()
+    {
+        if (isDebuging)
         {
-            collisionStates[body] = false;
+            for (int i = 0; i < bodies.Count; i++)
+            {
+                bodies[i].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
+            }
         }
 
         for (int i = 0; i < bodies.Count; i++)
@@ -94,38 +142,26 @@ public class Tsnats_World : MonoBehaviour
             for (int j = i + 1; j < bodies.Count; j++)
             {
                 Tsnats_Body bodyB = bodies[j];
+
                 bool isColliding = CheckCollisionBetween(bodyA, bodyB);
 
                 if (isColliding)
                 {
-                    Debug.Log($"Collision detected between {bodyA.name} and {bodyB.name}");
-                    collisionStates[bodyA] = true;
-                    collisionStates[bodyB] = true;
-                }
-            }
-        }
+                    bodyA.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
+                    bodyB.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
 
-        // Update colors based on collision state.
-        foreach (var body in bodies)
-        {
-            Renderer renderer = body.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                if (collisionStates[body])
-                {
-                    renderer.material.color = Color.red;
                 }
-                else
-                {
-                    renderer.material.color = Color.white;
-                }
+
             }
+
+
         }
     }
 
-private void FixedUpdate()
+
+    private void FixedUpdate()
     {
-        
+
         AddlyKinematics();
         CheckCollisions();
         CheckForNEWBodies();
