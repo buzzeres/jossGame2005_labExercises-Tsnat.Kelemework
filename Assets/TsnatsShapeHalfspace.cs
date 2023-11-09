@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class TsnatsShapeHalfSpace : TsnatsShape
 {
-    public Vector3 normal;
-    public float distanceFromOrigin;
 
     public override Type GetShapeType()
     {

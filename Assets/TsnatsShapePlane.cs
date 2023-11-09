@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class TsnatsShapePlane : TsnatsShape
 {
-    public Vector3 normal;
-    public float distanceFromOrigin;
+   
 
     public override Type GetShapeType()
     {

@@ -110,8 +110,11 @@ public class Tsnats_World : MonoBehaviour
 
     private bool CheckCollisionSpherePlane(TsnatsShapeSphere sphere, TsnatsShapePlane plane)
     {
-        float distanceToPlane = Vector3.Dot(plane.normal, sphere.transform.position) - plane.distanceFromOrigin;
-        return Mathf.Abs(distanceToPlane) <= sphere.radius;
+        Vector3 normal = plane.transform.rotation * new Vector3();
+        Vector3 displacement = sphere.transform.position - plane.transform.position;
+        float projection = Vector3.Dot(displacement, normal);
+        bool isColliding = projection < sphere.radius;
+        return isColliding;
     }
 
     private bool CheckCollisionSphereHalfSpace(TsnatsShapeSphere sphere, TsnatsShapeHalfSpace halfSpace)
