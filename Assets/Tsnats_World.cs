@@ -10,11 +10,11 @@ public class Tsnats_World : MonoBehaviour
     private List<Tsnats_Body> bodies;
     public Vector3 gravity = new Vector3(0, -9.8f, 0);
     public float damping = 0.10f;
-    private int i;
-
+    private Dictionary<Tsnats_Body, bool> collisionStates;
     void Start()
     {
         bodies = new List<Tsnats_Body>();
+        collisionStates = new Dictionary<Tsnats_Body, bool>();
         dt = Time.fixedDeltaTime;
 
     }
@@ -81,12 +81,10 @@ public class Tsnats_World : MonoBehaviour
 
     public void CheckCollisions()
     {
-        if (isDebuging)
+        // First, set all bodies to not colliding.
+        foreach (var body in bodies)
         {
-            for (int i = 0; i < bodies.Count; i++)
-            {
-                bodies[i].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
-            }
+            collisionStates[body] = false;
         }
 
         for (int i = 0; i < bodies.Count; i++)
@@ -96,23 +94,36 @@ public class Tsnats_World : MonoBehaviour
             for (int j = i + 1; j < bodies.Count; j++)
             {
                 Tsnats_Body bodyB = bodies[j];
-
                 bool isColliding = CheckCollisionBetween(bodyA, bodyB);
 
-                if (isDebuging)
+                if (isColliding)
                 {
-                    if (isColliding)
-                    {
-                        Debug.Log("Collision detected between " + bodyA.name + " and " + bodyB.name);
-                        bodyA.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
-                        bodyB.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
-                    }
+                    Debug.Log($"Collision detected between {bodyA.name} and {bodyB.name}");
+                    collisionStates[bodyA] = true;
+                    collisionStates[bodyB] = true;
+                }
+            }
+        }
+
+        // Update colors based on collision state.
+        foreach (var body in bodies)
+        {
+            Renderer renderer = body.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                if (collisionStates[body])
+                {
+                    renderer.material.color = Color.red;
+                }
+                else
+                {
+                    renderer.material.color = Color.white;
                 }
             }
         }
     }
 
-    private void FixedUpdate()
+private void FixedUpdate()
     {
         
         AddlyKinematics();
