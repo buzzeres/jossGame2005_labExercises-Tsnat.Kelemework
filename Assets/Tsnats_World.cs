@@ -114,8 +114,9 @@ public class Tsnats_World : MonoBehaviour
 
     private void FixedUpdate()
     {
-        CheckCollisions();
+        
         AddlyKinematics();
+        CheckCollisions();
         CheckForNEWBodies();
 
         t += dt;
