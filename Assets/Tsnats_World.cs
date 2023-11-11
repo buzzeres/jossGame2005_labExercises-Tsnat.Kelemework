@@ -99,8 +99,6 @@ public class Tsnats_World : MonoBehaviour
                 if (isColliding)
                 {
                     Debug.Log($"Collision detected between {bodyA.name} and {bodyB.name}");
-                    collisionStates[bodyA] = true;
-                    collisionStates[bodyB] = true;
                 }
             }
         }
