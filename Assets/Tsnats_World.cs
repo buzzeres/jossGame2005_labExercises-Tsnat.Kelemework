@@ -30,6 +30,8 @@ public class Tsnats_World : MonoBehaviour
             if (!bodies.Contains(bodyFound))
             {
                 bodies.Add(bodyFound);
+                collisionStates[bodyFound] = false; // Initialize collision state as false
+
             }
         }
     }
@@ -42,9 +44,8 @@ public class Tsnats_World : MonoBehaviour
             body.velocity += gravity * body.gravityScale * dt;
             body.velocity *= 1.0f - (damping * dt);
             Vector3 drag = -body.velocity * body.velocity.magnitude * body.velocity.magnitude * body.AirFriction;
-            body.velocity += drag * dt;  // Apply the drag to the velocity.
+            body.velocity += drag * dt;
             body.transform.position += body.velocity * dt;
-
         }
     }
 
@@ -64,6 +65,24 @@ public class Tsnats_World : MonoBehaviour
             return false;
         }
     }
+
+
+    private bool CheckCollisionSpherePlane(TsnatsShapeSphere sphere, TsnatsShapePlane plane)
+    {
+        Vector3 normal = plane.transform.up;
+        Vector3 displacement = sphere.transform.position - plane.transform.position;
+        float distance = Vector3.Dot(displacement, normal);
+        return distance < sphere.radius;
+    }
+
+    private bool CheckCollisionSphereHalfSpace(TsnatsShapeSphere sphere, TsnatsShapeHalfSpace halfSpace)
+    {
+        Vector3 normal = halfSpace.transform.up;
+        Vector3 displacement = sphere.transform.position - halfSpace.transform.position;
+        float distance = Vector3.Dot(displacement, normal);
+        return distance < 0; // Sphere is on the "solid" side of the half-space
+    }
+
 
     private bool CheckCollisionBetween(Tsnats_Body bodyA, Tsnats_Body bodyB)
     {
@@ -99,31 +118,17 @@ public class Tsnats_World : MonoBehaviour
         {
             return CheckCollisionSphereHalfSpace((TsnatsShapeSphere)bodyB.shape, (TsnatsShapeHalfSpace)bodyA.shape);
         }
+        // Check for halfspace-halfspace collision (non-colliding for infinite spaces)
+        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.HalfSpace &&
+                 bodyB.shape.GetShapeType() == TsnatsShape.Type.HalfSpace)
+        {
+            // Half-spaces are infinite, so let's assume they don't collide with each other
+            return false;
+        }
         else
         {
             throw new System.Exception("Unknown collision types: " + bodyA.shape.GetShapeType() + " and " + bodyB.shape.GetShapeType());
         }
-    }
-
-
-
-
-    private bool CheckCollisionSpherePlane(TsnatsShapeSphere sphere, TsnatsShapePlane plane)
-    {
-        Vector3 normal = plane.transform.rotation * new Vector3();
-        Vector3 displacement = sphere.transform.position - plane.transform.position;
-        float projection = Vector3.Dot(displacement, normal);
-        bool isColliding = projection < sphere.radius;
-        return isColliding;
-    }
-
-    private bool CheckCollisionSphereHalfSpace(TsnatsShapeSphere sphere, TsnatsShapeHalfSpace halfSpace)
-    {
-       Vector3 normal = halfSpace.transform.rotation * new Vector3();
-        Vector3 displacement = sphere.transform.position - halfSpace.transform.position;
-        float projection = Vector3.Dot(displacement, normal);
-        bool isColliding = projection < sphere.radius;
-        return isColliding;
     }
 
 
