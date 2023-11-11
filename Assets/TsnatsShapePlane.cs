@@ -4,7 +4,11 @@ using UnityEngine;
 
 public class TsnatsShapePlane : TsnatsShape
 {
-   
+
+    public Vector3 normal; // Normal vector of the plane
+    public Vector3 point; // A point on the plane
+
+
 
     public override Type GetShapeType()
     {

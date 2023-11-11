@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Rendering.VirtualTexturing;
 
@@ -81,15 +82,16 @@ public class Tsnats_World : MonoBehaviour
         Vector3 displacement = sphere.transform.position - halfSpace.transform.position;
         float distance = Vector3.Dot(displacement, normal);
         return distance < 0; // Sphere is on the "solid" side of the half-space
+
     }
 
 
     private bool CheckCollisionBetween(Tsnats_Body bodyA, Tsnats_Body bodyB)
     {
         if (bodyA.shape == null || bodyB.shape == null) return false;
-
+      
         // Check for sphere-sphere collision
-        if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere &&
+       else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere &&
             bodyB.shape.GetShapeType() == TsnatsShape.Type.Sphere)
         {
             return CheckCollisionBetweenSpheres((TsnatsShapeSphere)bodyA.shape, (TsnatsShapeSphere)bodyB.shape);
@@ -118,6 +120,20 @@ public class Tsnats_World : MonoBehaviour
         {
             return CheckCollisionSphereHalfSpace((TsnatsShapeSphere)bodyB.shape, (TsnatsShapeHalfSpace)bodyA.shape);
         }
+        // Check for halfspace-plane collision
+        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.HalfSpace &&
+                 bodyB.shape.GetShapeType() == TsnatsShape.Type.Plane)
+        {
+            // Assuming half-spaces do not collide with planes
+            return false;
+        }
+        // Check for plane-halfspace collision (which is the same as halfspace-plane)
+        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Plane &&
+                 bodyB.shape.GetShapeType() == TsnatsShape.Type.HalfSpace)
+        {
+            // Assuming planes do not collide with half-spaces
+            return false;
+        }
         // Check for halfspace-halfspace collision (non-colliding for infinite spaces)
         else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.HalfSpace &&
                  bodyB.shape.GetShapeType() == TsnatsShape.Type.HalfSpace)
@@ -133,14 +149,14 @@ public class Tsnats_World : MonoBehaviour
 
 
 
-    private void CheckCollisions()
+
+    public void CheckCollisions()
     {
-        if (isDebuging)
+        // First, set all bodies to not colliding.
+        foreach (var body in bodies)
         {
-            for (int i = 0; i < bodies.Count; i++)
-            {
-                bodies[i].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
-            }
+            collisionStates[body] = false;
+         
         }
 
         for (int i = 0; i < bodies.Count; i++)
@@ -150,23 +166,40 @@ public class Tsnats_World : MonoBehaviour
             for (int j = i + 1; j < bodies.Count; j++)
             {
                 Tsnats_Body bodyB = bodies[j];
-
                 bool isColliding = CheckCollisionBetween(bodyA, bodyB);
 
                 if (isColliding)
                 {
-                    bodyA.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
-                    bodyB.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
+                    Debug.Log($"Collision detected between {bodyA.name} and {bodyB.name}");
+                    collisionStates[bodyA] = true;
+                    collisionStates[bodyB] = true;
+                }
+            }
+        }
 
+        // Update colors based on collision state.
+        foreach (var body in bodies)
+        {
+            Renderer renderer = body.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                if (collisionStates[body])
+                {
+                    renderer.material.color = Color.red;
+                }
+                else
+                {
+                    renderer.material.color = Color.white;
+                }
+                // Check if the body is a plane for color updating
+                if (collisionStates[body] && body.shape.GetShapeType() == TsnatsShape.Type.Plane)
+                {
+                    
                 }
 
             }
-
-
         }
     }
-
-
     private void FixedUpdate()
     {
 
