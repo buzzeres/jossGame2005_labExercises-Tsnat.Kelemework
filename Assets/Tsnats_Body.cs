@@ -9,6 +9,8 @@ public class Tsnats_Body : MonoBehaviour
     public float gravityScale = 1.0f;
     public float AirFriction = 0.1f;
     public TsnatsShape shape = null;
+    public bool isStatic = false; // A new property to fix the object in place
+
 
     public void Awake()
     {
