@@ -12,11 +12,9 @@ public class Tsnats_World : MonoBehaviour
     public Vector3 gravity = new Vector3(0, -9.8f, 0);
     public float damping = 0.10f;
     private Dictionary<Tsnats_Body, bool> collisionStates;
-
     // New properties for user controls
     public float mass = 8.0f; // in kilograms
     public TsnatsShapeHalfSpace plane; // Assign this in the Unity Editor
-
 
     void Start()
     {
@@ -95,10 +93,10 @@ public class Tsnats_World : MonoBehaviour
     private bool CheckCollisionBetween(Tsnats_Body bodyA, Tsnats_Body bodyB)
     {
         if (bodyA.shape == null || bodyB.shape == null) return false;
-      
+
         // Check for sphere-sphere collision
-       else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere &&
-            bodyB.shape.GetShapeType() == TsnatsShape.Type.Sphere)
+        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere &&
+             bodyB.shape.GetShapeType() == TsnatsShape.Type.Sphere)
         {
             return CheckCollisionBetweenSpheres((TsnatsShapeSphere)bodyA.shape, (TsnatsShapeSphere)bodyB.shape);
         }
@@ -162,7 +160,7 @@ public class Tsnats_World : MonoBehaviour
         foreach (var body in bodies)
         {
             collisionStates[body] = false;
-         
+
         }
 
         for (int i = 0; i < bodies.Count; i++)
@@ -176,7 +174,7 @@ public class Tsnats_World : MonoBehaviour
 
                 if (isColliding)
                 {
-                    //Debug.Log($"Collision detected between {bodyA.name} and {bodyB.name}");
+                    Debug.Log($"Collision detected between {bodyA.name} and {bodyB.name}");
                     collisionStates[bodyA] = true;
                     collisionStates[bodyB] = true;
                 }
@@ -200,7 +198,7 @@ public class Tsnats_World : MonoBehaviour
                 // Check if the body is a plane for color updating
                 if (collisionStates[body] && body.shape.GetShapeType() == TsnatsShape.Type.Plane)
                 {
-                    
+
                 }
 
             }
@@ -212,23 +210,24 @@ public class Tsnats_World : MonoBehaviour
         CheckCollisions();
         CheckForNEWBodies();
 
-        // Assuming there is only one circle and one plane in the scene for simplicity
         Tsnats_Body circle = bodies.Find(body => body.shape.GetShapeType() == TsnatsShape.Type.Sphere);
-        if (circle != null && plane != null) // Ensure both the circle and plane are not null
+        if (circle != null && plane != null)
         {
+            // Calculate force vectors
             Vector3 fg = gravity * mass; // Gravitational force vector
             Vector3 N = plane.transform.up * (-Vector3.Dot(gravity, plane.transform.up)) * mass; // Normal force vector
-            Vector3 fgPara = Vector3.Project(fg, plane.transform.right); // Parallel component of gravity
+            Vector3 fgPerp = Vector3.ProjectOnPlane(fg, plane.transform.up); // Parallel component of gravity
+
+            // Assuming infinite friction, the friction force will be equal and opposite to fgPerp
+            Vector3 frictionForce = -fgPerp;
 
             // Visualize the forces
-            Debug.DrawRay(circle.transform.position, N, Color.green); // Normal force in green
-            Debug.DrawRay(circle.transform.position, fgPara, Color.yellow); // Friction force in orange
-            Debug.DrawRay(circle.transform.position, fg, Color.magenta); // Gravity force in purple
+            Debug.DrawRay(circle.transform.position, N, Color.green, dt); // Normal force in green
+            Debug.DrawRay(circle.transform.position, frictionForce, Color.blue, dt); // Friction force in blue for visibility
+            Debug.DrawRay(circle.transform.position, fg, Color.magenta, dt); // Gravity force in purple
         }
 
         t += dt;
     }
-
-
 
 }
