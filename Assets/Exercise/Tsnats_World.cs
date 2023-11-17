@@ -218,7 +218,7 @@ public class Tsnats_World : MonoBehaviour
             Vector3 N = plane.transform.up * (-Vector3.Dot(gravity, plane.transform.up)) * mass; // Normal force vector
             Vector3 fgPerp = Vector3.ProjectOnPlane(fg, plane.transform.up); // Parallel component of gravity
 
-            // Assuming infinite friction, the friction force will be equal and opposite to fgPerp
+            //the friction force will be equal and opposite to fgPerp
             Vector3 frictionForce = -fgPerp;
 
             // Visualize the forces
