@@ -75,18 +75,14 @@ public class Tsnats_World : MonoBehaviour
 
     private bool CheckCollisionSpherePlane(TsnatsShapeSphere sphere, TsnatsShapePlane plane)
     {
-        // Calculate the displacement vector from the plane to the sphere
         Vector3 displacement = sphere.transform.position - plane.transform.position;
-
-        // Calculate the normal of the plane
         Vector3 normal = plane.transform.up;
 
-        // Project the displacement onto the plane's normal to find the distance from the plane to the sphere's center
+        //Get the distanse from the sphere to the plane 
         float distance = Vector3.Dot(displacement, normal);
+        
 
-        // Check if the sphere's surface is intersecting the plane
         bool isColliding = distance < sphere.radius;
-
         // Collision response
         if (isColliding)
         {
@@ -102,25 +98,13 @@ public class Tsnats_World : MonoBehaviour
 
     private bool CheckCollisionSphereHalfSpace(TsnatsShapeSphere sphere, TsnatsShapeHalfSpace halfSpace)
     {
-        // Calculate the displacement vector from the half-space to the sphere
         Vector3 displacement = sphere.transform.position - halfSpace.transform.position;
-
-        // Calculate the normal of the half-space
         Vector3 normal = halfSpace.transform.up;
-
-        // Project the displacement onto the half-space's normal to find the distance from the half-space to the sphere's center
         float distance = Vector3.Dot(displacement, normal);
-
-        // Check if the sphere is on the solid side of the half-space
         bool isColliding = distance < sphere.radius;
-
-        // Collision response
         if (isColliding)
         {
-            // Calculate the Minimum Translation Vector (MTV) to push the sphere out of collision
             Vector3 mtv = (sphere.radius - distance) * normal;
-
-            // Apply the MTV to the sphere's position to resolve the collision
             sphere.transform.position += mtv;
         }
 
