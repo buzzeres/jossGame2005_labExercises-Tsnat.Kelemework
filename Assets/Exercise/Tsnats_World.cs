@@ -5,16 +5,18 @@ using UnityEngine.Rendering.VirtualTexturing;
 
 public class Tsnats_World : MonoBehaviour
 {
-    public bool isDebuging = true;
+    public bool isDebugging = true;
     public float dt = 1.0f / 30.0f;    // Start is called before the first frame update
     public float t = 0.0f;
     private List<Tsnats_Body> bodies;
     public Vector3 gravity = new Vector3(0, -9.8f, 0);
     public float damping = 0.10f;
     private Dictionary<Tsnats_Body, bool> collisionStates;
+
     // New properties for user controls
     public float mass = 8.0f; // in kilograms
     public TsnatsShapeHalfSpace plane; // Assign this in the Unity Editor
+
 
     void Start()
     {
@@ -24,36 +26,73 @@ public class Tsnats_World : MonoBehaviour
 
     }
 
-    public void CheckForNEWBodies()
+    public void CheckForNewBodies()
     {
-
         Tsnats_Body[] foundBodies = FindObjectsOfType<Tsnats_Body>();
-        //Find any bodies in the scene not already tracked, if they are not tracked, add them.
 
         foreach (Tsnats_Body bodyFound in foundBodies)
         {
             if (!bodies.Contains(bodyFound))
             {
                 bodies.Add(bodyFound);
-                collisionStates[bodyFound] = false; // Initialize collision state as false
-
+                collisionStates[bodyFound] = false;
             }
         }
     }
 
 
-    private void AddlyKinematics()
+    public Vector3 GetGravityForce(Tsnats_Body body)
+    {
+        return gravity * body.gravityScale * body.mass;
+    }
+
+
+    private void ResetNetForces()
     {
         foreach (Tsnats_Body body in bodies)
         {
-            body.velocity += gravity * body.gravityScale * dt;
-            body.velocity *= 1.0f - (damping * dt);
-            Vector3 drag = -body.velocity * body.velocity.magnitude * body.velocity.magnitude * body.AirFriction;
-            body.velocity += drag * dt;
-            body.transform.position += body.velocity * dt;
+            body.ResetForces();
         }
     }
 
+
+    private void ApplyKinematics()
+    {
+        foreach (Tsnats_Body body in bodies)
+        {
+
+            //Do kinematics
+            body.transform.position += body.velocity * dt;
+
+            //if (!body.isStatic)
+            //{
+            //    body.velocity += gravity * body.gravityScale * dt;
+            //    body.velocity *= 1.0f - (damping * dt);
+            //    Vector3 drag = -body.velocity * body.velocity.magnitude * body.velocity.magnitude;
+            //    body.velocity += drag * dt;
+            //    body.transform.position += body.velocity * dt;
+            //}
+        }
+    }
+
+
+    private void ApplyAcceleration()
+    {
+        foreach (Tsnats_Body body in bodies)
+        {
+
+            Vector3 ForceGravity = GetGravityForce(body);
+
+           body.AddForce(ForceGravity);
+
+            Vector3 AccelerationNet = body.ForceNet / body.mass;
+
+            //Apply acceleration due to gravity
+            body.velocity += AccelerationNet * dt;
+            //Damp motions
+            body.velocity *= (1.0f - (damping * dt));
+        }
+    }
 
     public bool CheckCollisionBetweenSpheres(TsnatsShapeSphere shapeA, TsnatsShapeSphere shapeB)
     {
@@ -74,24 +113,46 @@ public class Tsnats_World : MonoBehaviour
 
     private bool CheckCollisionSpherePlane(TsnatsShapeSphere sphere, TsnatsShapePlane plane)
     {
-        Vector3 normal = plane.transform.up;
         Vector3 displacement = sphere.transform.position - plane.transform.position;
+        Vector3 normal = plane.transform.up;
+
+        //Get the distanse from the sphere to the plane 
         float distance = Vector3.Dot(displacement, normal);
-        return distance < sphere.radius;
+
+
+        bool isColliding = distance < sphere.radius;
+        // Collision response
+        if (isColliding)
+        {
+            // Calculate the Minimum Translation Vector (MTV) to push the sphere out of collision
+            Vector3 mtv = (sphere.radius - distance) * normal;
+
+            // Apply the MTV to the sphere's position to resolve the collision
+            sphere.transform.position += mtv;
+        }
+
+        return isColliding;
     }
 
     private bool CheckCollisionSphereHalfSpace(TsnatsShapeSphere sphere, TsnatsShapeHalfSpace halfSpace)
     {
-        Vector3 normal = halfSpace.transform.up;
         Vector3 displacement = sphere.transform.position - halfSpace.transform.position;
+        Vector3 normal = halfSpace.transform.up;
         float distance = Vector3.Dot(displacement, normal);
-        return distance < 0; // Sphere is on the "solid" side of the half-space
+        bool isColliding = distance < sphere.radius;
+        if (isColliding)
+        {
+            Vector3 mtv = (sphere.radius - distance) * normal;
+            sphere.transform.position += mtv;
+        }
 
+        return isColliding;
     }
 
 
     private bool CheckCollisionBetween(Tsnats_Body bodyA, Tsnats_Body bodyB)
     {
+
         if (bodyA.shape == null || bodyB.shape == null) return false;
 
         // Check for sphere-sphere collision
@@ -151,9 +212,6 @@ public class Tsnats_World : MonoBehaviour
         }
     }
 
-
-
-
     public void CheckCollisions()
     {
         // First, set all bodies to not colliding.
@@ -206,26 +264,11 @@ public class Tsnats_World : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        AddlyKinematics();
+        CheckForNewBodies();
+        ResetNetForces();
+        ApplyKinematics();
         CheckCollisions();
-        CheckForNEWBodies();
-
-        Tsnats_Body circle = bodies.Find(body => body.shape.GetShapeType() == TsnatsShape.Type.Sphere);
-        if (circle != null && plane != null)
-        {
-            // Calculate force vectors
-            Vector3 fg = gravity * mass; // Gravitational force vector
-            Vector3 N = plane.transform.up * (-Vector3.Dot(gravity, plane.transform.up)) * mass; // Normal force vector
-            Vector3 fgPerp = Vector3.ProjectOnPlane(fg, plane.transform.up); // Parallel component of gravity
-
-            //the friction force will be equal and opposite to fgPerp
-            Vector3 frictionForce = -fgPerp;
-
-            // Visualize the forces
-            Debug.DrawRay(circle.transform.position, N, Color.green, dt); // Normal force in green
-            Debug.DrawRay(circle.transform.position, frictionForce, Color.blue, dt); // Friction force in blue for visibility
-            Debug.DrawRay(circle.transform.position, fg, Color.magenta, dt); // Gravity force in purple
-        }
+        ApplyAcceleration();
 
         t += dt;
     }
