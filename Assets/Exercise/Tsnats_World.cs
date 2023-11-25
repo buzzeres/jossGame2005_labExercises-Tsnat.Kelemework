@@ -5,18 +5,16 @@ using UnityEngine.Rendering.VirtualTexturing;
 
 public class Tsnats_World : MonoBehaviour
 {
-    public bool isDebugging = true;
+    public bool isDebuging = true;
     public float dt = 1.0f / 30.0f;    // Start is called before the first frame update
     public float t = 0.0f;
     private List<Tsnats_Body> bodies;
     public Vector3 gravity = new Vector3(0, -9.8f, 0);
     public float damping = 0.10f;
     private Dictionary<Tsnats_Body, bool> collisionStates;
-
     // New properties for user controls
     public float mass = 8.0f; // in kilograms
     public TsnatsShapeHalfSpace plane; // Assign this in the Unity Editor
-
 
     void Start()
     {
@@ -26,47 +24,33 @@ public class Tsnats_World : MonoBehaviour
 
     }
 
-    public void CheckForNewBodies()
+    public void CheckForNEWBodies()
     {
+
         Tsnats_Body[] foundBodies = FindObjectsOfType<Tsnats_Body>();
+        //Find any bodies in the scene not already tracked, if they are not tracked, add them.
 
         foreach (Tsnats_Body bodyFound in foundBodies)
         {
             if (!bodies.Contains(bodyFound))
             {
                 bodies.Add(bodyFound);
-                collisionStates[bodyFound] = false;
+                collisionStates[bodyFound] = false; // Initialize collision state as false
+
             }
         }
     }
 
-    private void ApplyKinematics()
+
+    private void AddlyKinematics()
     {
         foreach (Tsnats_Body body in bodies)
         {
-            Vector3 ForceNet = Vector3.zero;
-
-            Vector3 ForceGravity = gravity * body.gravityScale * body.mass;
-
-            ForceNet += ForceGravity;
-
-            Vector3 AccelerationNet = ForceNet /  body.mass);
-
-            //Apply acceleration due to gravity
-            body.velocity += AccelerationNet * dt;
-            //Damp motions
-            body.velocity *= (1.0f - (damping * dt));
-            //Do kinematics
+            body.velocity += gravity * body.gravityScale * dt;
+            body.velocity *= 1.0f - (damping * dt);
+            Vector3 drag = -body.velocity * body.velocity.magnitude * body.velocity.magnitude * body.AirFriction;
+            body.velocity += drag * dt;
             body.transform.position += body.velocity * dt;
-
-            //if (!body.isStatic)
-            //{
-            //    body.velocity += gravity * body.gravityScale * dt;
-            //    body.velocity *= 1.0f - (damping * dt);
-            //    Vector3 drag = -body.velocity * body.velocity.magnitude * body.velocity.magnitude;
-            //    body.velocity += drag * dt;
-            //    body.transform.position += body.velocity * dt;
-            //}
         }
     }
 
@@ -90,51 +74,29 @@ public class Tsnats_World : MonoBehaviour
 
     private bool CheckCollisionSpherePlane(TsnatsShapeSphere sphere, TsnatsShapePlane plane)
     {
-        Vector3 displacement = sphere.transform.position - plane.transform.position;
         Vector3 normal = plane.transform.up;
-
-        //Get the distanse from the sphere to the plane 
+        Vector3 displacement = sphere.transform.position - plane.transform.position;
         float distance = Vector3.Dot(displacement, normal);
-        
-
-        bool isColliding = distance < sphere.radius;
-        // Collision response
-        if (isColliding)
-        {
-            // Calculate the Minimum Translation Vector (MTV) to push the sphere out of collision
-            Vector3 mtv = (sphere.radius - distance) * normal;
-
-            // Apply the MTV to the sphere's position to resolve the collision
-            sphere.transform.position += mtv;
-        }
-
-        return isColliding;
+        return distance < sphere.radius;
     }
 
     private bool CheckCollisionSphereHalfSpace(TsnatsShapeSphere sphere, TsnatsShapeHalfSpace halfSpace)
     {
-        Vector3 displacement = sphere.transform.position - halfSpace.transform.position;
         Vector3 normal = halfSpace.transform.up;
+        Vector3 displacement = sphere.transform.position - halfSpace.transform.position;
         float distance = Vector3.Dot(displacement, normal);
-        bool isColliding = distance < sphere.radius;
-        if (isColliding)
-        {
-            Vector3 mtv = (sphere.radius - distance) * normal;
-            sphere.transform.position += mtv;
-        }
+        return distance < 0; // Sphere is on the "solid" side of the half-space
 
-        return isColliding;
     }
 
 
     private bool CheckCollisionBetween(Tsnats_Body bodyA, Tsnats_Body bodyB)
     {
+        if (bodyA.shape == null || bodyB.shape == null) return false;
 
-       if (bodyA.shape == null || bodyB.shape == null) return false;
-      
         // Check for sphere-sphere collision
-       else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere &&
-            bodyB.shape.GetShapeType() == TsnatsShape.Type.Sphere)
+        else if (bodyA.shape.GetShapeType() == TsnatsShape.Type.Sphere &&
+             bodyB.shape.GetShapeType() == TsnatsShape.Type.Sphere)
         {
             return CheckCollisionBetweenSpheres((TsnatsShapeSphere)bodyA.shape, (TsnatsShapeSphere)bodyB.shape);
         }
@@ -189,6 +151,9 @@ public class Tsnats_World : MonoBehaviour
         }
     }
 
+
+
+
     public void CheckCollisions()
     {
         // First, set all bodies to not colliding.
@@ -241,9 +206,9 @@ public class Tsnats_World : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        ApplyKinematics();
+        AddlyKinematics();
         CheckCollisions();
-        CheckForNewBodies();
+        CheckForNEWBodies();
 
         Tsnats_Body circle = bodies.Find(body => body.shape.GetShapeType() == TsnatsShape.Type.Sphere);
         if (circle != null && plane != null)
