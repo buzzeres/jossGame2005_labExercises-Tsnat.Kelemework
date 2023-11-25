@@ -6,91 +6,80 @@ using UnityEngine.Rendering.VirtualTexturing;
 public class Tsnats_World : MonoBehaviour
 {
     public bool isDebugging = true;
-    public float dt = 1.0f / 30.0f;    // Start is called before the first frame update
-    public float t = 0.0f;
-    private List<Tsnats_Body> bodies;
-    public Vector3 gravity = new Vector3(0, -9.8f, 0);
-    public float damping = 0.10f;
-    private Dictionary<Tsnats_Body, bool> collisionStates;
+    public float dt = 1.0f / 30.0f; // Fixed timestep
+    public float t = 0.0f; // Time
+    private List<Tsnats_Body> bodies; // List of bodies in the simulation
+    public Vector3 gravity = new Vector3(0, -9.8f, 0); // Gravity vector
+    public float damping = 0.10f; // Damping coefficient
+    private Dictionary<Tsnats_Body, bool> collisionStates; // Dictionary to track collision states
 
     // New properties for user controls
-    public float mass = 8.0f; // in kilograms
-    public TsnatsShapeHalfSpace plane; // Assign this in the Unity Editor
-
+    public float mass = 8.0f; // Default mass for bodies
+    public TsnatsShapeHalfSpace plane; // Ground plane (assigned in the Unity Editor)
 
     void Start()
     {
-        bodies = new List<Tsnats_Body>();
-        collisionStates = new Dictionary<Tsnats_Body, bool>();
-        dt = Time.fixedDeltaTime;
-
+        bodies = new List<Tsnats_Body>(); // Initialize empty list of bodies
+        collisionStates = new Dictionary<Tsnats_Body, bool>(); // Initialize empty dictionary for collision states
+        dt = Time.fixedDeltaTime; // Get fixed timestep from Unity
     }
 
     public void CheckForNewBodies()
     {
-        Tsnats_Body[] foundBodies = FindObjectsOfType<Tsnats_Body>();
+        Tsnats_Body[] foundBodies = FindObjectsOfType<Tsnats_Body>(); // Find all objects with Tsnats_Body component
 
-        foreach (Tsnats_Body bodyFound in foundBodies)
+        foreach (Tsnats_Body bodyFound in foundBodies) // Iterate through found bodies
         {
-            if (!bodies.Contains(bodyFound))
+            if (!bodies.Contains(bodyFound)) // Check if body is already in the list
             {
-                bodies.Add(bodyFound);
-                collisionStates[bodyFound] = false;
+                bodies.Add(bodyFound); // Add new body to the list
+                collisionStates[bodyFound] = false; // Initialize collision state to false
             }
         }
     }
 
-
     public Vector3 GetGravityForce(Tsnats_Body body)
     {
-        return gravity * body.gravityScale * body.mass;
+        return gravity * body.gravityScale * body.mass; // Calculate gravity force
     }
-
 
     private void ResetNetForces()
     {
-        foreach (Tsnats_Body body in bodies)
+        foreach (Tsnats_Body body in bodies) // Reset net forces for all bodies
         {
-            body.ResetForces();
+            body.ResetForces(); // Reset forces for each body
         }
     }
-
 
     private void ApplyKinematics()
     {
-        foreach (Tsnats_Body body in bodies)
+        foreach (Tsnats_Body body in bodies) // Update positions based on velocities
         {
 
-            //Do kinematics
+            // Do kinematics
             body.transform.position += body.velocity * dt;
-
-            //if (!body.isStatic)
-            //{
-            //    body.velocity += gravity * body.gravityScale * dt;
-            //    body.velocity *= 1.0f - (damping * dt);
-            //    Vector3 drag = -body.velocity * body.velocity.magnitude * body.velocity.magnitude;
-            //    body.velocity += drag * dt;
-            //    body.transform.position += body.velocity * dt;
-            //}
         }
     }
-
 
     private void ApplyAcceleration()
     {
         foreach (Tsnats_Body body in bodies)
         {
 
-            Vector3 ForceGravity = GetGravityForce(body);
+            Vector3 ForceGravity = GetGravityForce(body); // Calculate gravity force
 
-           body.AddForce(ForceGravity);
+            body.AddForce(ForceGravity); // Add gravity force to net forces
 
-            Vector3 AccelerationNet = body.ForceNet / body.mass;
+            Vector3 AccelerationNet = body.ForceNet / body.mass; // Calculate net acceleration
 
             //Apply acceleration due to gravity
-            body.velocity += AccelerationNet * dt;
+            body.velocity += AccelerationNet * dt; // Update velocity based on acceleration
             //Damp motions
-            body.velocity *= (1.0f - (damping * dt));
+            body.velocity *= (1.0f - (damping * dt)); // Damp velocity to reduce oscillations
+
+            Debug.DrawLine(body.transform.position, body.transform.position + body.velocity, Color.red, 0.25f, false); // Draw velocity
+            Debug.DrawLine(body.transform.position, body.transform.position + ForceGravity, new Color(0.8f, 0.0f, 0.8f), 0.25f, false); // Draw gravity force
+            Debug.DrawLine(body.transform.position, body.transform.position + body.ForceNet, Color.blue, 0.25f, false); // Draw net force
         }
     }
 
@@ -120,15 +109,38 @@ public class Tsnats_World : MonoBehaviour
         float distance = Vector3.Dot(displacement, normal);
 
 
+        float overlap = sphere.radius - distance;
+
         bool isColliding = distance < sphere.radius;
-        // Collision response
         if (isColliding)
         {
-            // Calculate the Minimum Translation Vector (MTV) to push the sphere out of collision
             Vector3 mtv = (sphere.radius - distance) * normal;
-
-            // Apply the MTV to the sphere's position to resolve the collision
             sphere.transform.position += mtv;
+
+            Tsnats_Body sphereBody = sphere.GetComponent<Tsnats_Body>();
+
+            float fgDotN = Vector3.Dot(GetGravityForce(sphereBody), normal);
+
+            if (fgDotN > 0.0f)
+            {
+                //// Calculate the Minimum Translation Vector (MTV) to push the sphere out of collision
+                //Vector3 mtv = (sphere.radius - distance) * normal;
+
+                //// Apply the MTV to the sphere's position to resolve the collision
+                //sphere.transform.position += mtv;
+
+
+                //Tsnats_Body sphereBody = sphere.GetComponent<Tsnats_Body>();
+                return isColliding;
+            }
+            else
+            {
+                Vector3 ForceGravityParallel = fgDotN * normal;
+                Vector3 ForceNormal = -ForceGravityParallel;
+                sphereBody.AddForce(ForceNormal);
+                Debug.DrawLine(sphere.transform.position, sphere.transform.position + ForceNormal, Color.green, 0.25f, false);
+            }
+
         }
 
         return isColliding;
@@ -144,6 +156,25 @@ public class Tsnats_World : MonoBehaviour
         {
             Vector3 mtv = (sphere.radius - distance) * normal;
             sphere.transform.position += mtv;
+
+            Tsnats_Body sphereBody = sphere.GetComponent<Tsnats_Body>();
+
+            float fgDotN = Vector3.Dot(GetGravityForce(sphereBody), normal);
+
+            if (fgDotN > 0.0f)
+            {
+                return isColliding;
+            }
+            else
+            {
+                Vector3 ForceGravityParallel = fgDotN * normal;
+                Vector3 ForceNormal = -ForceGravityParallel;
+                sphereBody.AddForce(ForceNormal);
+                Debug.DrawLine(sphere.transform.position, sphere.transform.position + ForceNormal, Color.green, 0.25f, false);
+
+                float frictionCoeficient = sphereBody.frictionCoeficient;
+            }
+
         }
 
         return isColliding;
