@@ -98,10 +98,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   velocity: {x: 0, y: 0, z: 0}
-  gravityScale: 0
+  gravityScale: 1
+  AirFriction: 0
+  shape: {fileID: 0}
   isStatic: 0
   mass: 1
-  shape: {fileID: 0}
 --- !u!114 &-3614618735619808557
 MonoBehaviour:
   m_ObjectHideFlags: 0
